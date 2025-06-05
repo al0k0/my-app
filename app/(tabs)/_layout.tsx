@@ -1,45 +1,36 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from '@/context/ThemeContext'; // apna custom theme context
+import type { RouteProp } from '@react-navigation/native';
+import type { BottomTabNavigationOptions } from '@react-navigation/bottom-tabs';
 
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function TabsLayout() {
+  const { theme } = useTheme(); // apna custom theme context se theme lo
+  const isDark = theme === 'dark';
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
+    <NavigationThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+      <Tabs
+        screenOptions={({ route }: { route: RouteProp<Record<string, object | undefined>, string> }) =>
+          ({
+            headerShown: false,
+            tabBarActiveTintColor: '#2563eb',
+            tabBarInactiveTintColor: 'gray',
+            tabBarIcon: ({ color, size }) => {
+              let iconName = '';
+
+              if (route.name === 'index') {
+                iconName = 'home';
+              } else if (route.name === 'settings') {
+                iconName = 'settings';
+              }
+
+              return <MaterialIcons name={iconName as any} size={size} color={color} />;
+            },
+          } satisfies BottomTabNavigationOptions)
+        }
       />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
+    </NavigationThemeProvider>
   );
 }
